@@ -12,6 +12,9 @@ const ALLOWED = new Set([
   'BSD-2-Clause',
   'BSD-3-Clause',
   'Apache-2.0',
+  // Fonts (Andika). Bundling with software is allowed; the font can't be
+  // sold on its own, and the license text must ship with it.
+  'OFL-1.1',
 ])
 
 interface PackageInfo {
@@ -32,7 +35,9 @@ function packageDirFor(moduleId: string): string | null {
   if (at === -1) return null
   const rest = id.slice(at + NODE_MODULES.length).split(sep)
   const nameParts = rest[0].startsWith('@') ? 2 : 1
-  return id.slice(0, at + NODE_MODULES.length) + rest.slice(0, nameParts).join(sep)
+  return (
+    id.slice(0, at + NODE_MODULES.length) + rest.slice(0, nameParts).join(sep)
+  )
 }
 
 function findFile(dir: string, pattern: RegExp) {

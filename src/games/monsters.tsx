@@ -42,17 +42,18 @@ const CREATURES: Omit<Creature, 'pairId' | 'label'>[] = [
   { name: 'Drakelet', art: '🐉', element: 'dragon' },
 ]
 
+// Pale block colors behind each creature; the creature carries the color.
 const ELEMENT_STYLES: Record<Element, string> = {
-  fire: 'from-orange-400 to-red-500',
-  water: 'from-sky-400 to-blue-600',
-  grass: 'from-lime-400 to-green-600',
-  electric: 'from-yellow-300 to-amber-500',
-  ice: 'from-cyan-200 to-sky-400',
-  wind: 'from-teal-300 to-emerald-500',
-  rock: 'from-stone-400 to-amber-800',
-  dark: 'from-slate-600 to-zinc-900',
-  fairy: 'from-pink-300 to-fuchsia-500',
-  dragon: 'from-violet-500 to-indigo-700',
+  fire: 'bg-square-pale',
+  water: 'bg-rhombus-pale',
+  grass: 'bg-triangle-pale',
+  electric: 'bg-hex-pale',
+  ice: 'bg-[#e3f1f6]',
+  wind: 'bg-[#e6f1ea]',
+  rock: 'bg-tan-pale',
+  dark: 'bg-[#dfe3ea]',
+  fairy: 'bg-[#f7e1ee]',
+  dragon: 'bg-[#e6e0f4]',
 }
 
 function sample<T>(items: T[], n: number): T[] {
@@ -72,7 +73,7 @@ export const monsterGame: GameDefinition<Creature> = {
   // Face-up would just be spotting identical pictures, so memory mode only.
   allowFaceUp: false,
   defaultFaceUp: false,
-  backClass: 'from-red-500 to-rose-700',
+  backClass: 'back-blue',
   buildPairs: (difficulty) =>
     sample(CREATURES, DIFFICULTIES[difficulty].pairs).map((c) => {
       const card: Creature = { ...c, pairId: c.name, label: c.name }
@@ -81,11 +82,11 @@ export const monsterGame: GameDefinition<Creature> = {
   faceClass: (c) => ELEMENT_STYLES[c.element],
   renderFace: (c) => (
     <>
-      <span className="text-[45cqw] leading-none drop-shadow">{c.art}</span>
-      <span className="mt-[4cqw] w-full truncate text-center text-[clamp(0.55rem,12cqw,0.95rem)] font-bold leading-tight drop-shadow">
+      <span className="text-[45cqw] leading-none">{c.art}</span>
+      <span className="mt-[4cqw] w-full truncate text-center text-[clamp(0.55rem,12cqw,0.95rem)] font-bold leading-tight">
         {c.name}
       </span>
-      <span className="hidden text-[clamp(0.5rem,8cqw,0.65rem)] uppercase tracking-wider opacity-80 @min-[5.5rem]:block">
+      <span className="hidden text-[clamp(0.55rem,9cqw,0.75rem)] text-ink-soft capitalize @min-[5.5rem]:block">
         {c.element}
       </span>
     </>

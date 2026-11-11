@@ -7,14 +7,14 @@ import {
   writeFileSync,
 } from 'node:fs'
 import { join, relative, resolve, sep } from 'node:path'
-import { defineConfig, type Plugin } from 'vite'
+import tailwindcss from '@tailwindcss/vite'
 import { devtools } from '@tanstack/devtools-vite'
 
 import { tanstackRouter } from '@tanstack/router-plugin/vite'
 
 import viteReact from '@vitejs/plugin-react'
-import tailwindcss from '@tailwindcss/vite'
-import { thirdPartyNotices } from './vite-plugins/third-party-notices'
+import { defineConfig, type Plugin } from 'vite'
+import { thirdPartyNotices } from './vite-plugins/third-party-notices.ts'
 
 // public/sw.js must stay byte-for-byte identical across releases (see the
 // comment at its top). If you really mean to change it, update this hash and
@@ -76,7 +76,10 @@ function offlineVersionManifest(): Plugin {
 
       const hash = createHash('sha256')
       for (const f of files) {
-        hash.update(f).update('\0').update(readFileSync(join(outDir, f)))
+        hash
+          .update(f)
+          .update('\0')
+          .update(readFileSync(join(outDir, f)))
       }
       const manifest = {
         version: hash.digest('hex').slice(0, 12),
@@ -101,11 +104,11 @@ const config = defineConfig({
     tailwindcss(),
     tanstackRouter({ target: 'react', autoCodeSplitting: true }),
     viteReact(),
-    // Tailwind isn't a bundled module, but its generated CSS ships in the app.
+    // Tailwind and the Andika font aren't JS modules, but both ship in the app.
     thirdPartyNotices({
       appName: 'Match Games',
       appLicenseFile: 'LICENSE',
-      alwaysInclude: ['tailwindcss'],
+      alwaysInclude: ['tailwindcss', '@fontsource/andika'],
     }),
     offlineVersionManifest(),
   ],

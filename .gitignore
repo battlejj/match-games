@@ -11,3 +11,8 @@ dist-ssr
 .vinxi
 __unconfig*
 todos.json
+
+# Test output
+e2e/.dist
+test-results
+playwright-report

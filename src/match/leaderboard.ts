@@ -2,6 +2,15 @@
 // Each board is identified by a key such as "math:addition:easy:up"; keys
 // start with the game's id so one game's boards can be reset on their own.
 
+import { useMemo } from 'react'
+import {
+  readJSON,
+  readString,
+  useStoredJSON,
+  writeJSON,
+  writeString,
+} from './storage'
+
 export interface LeaderboardEntry {
   id: string
   name: string
@@ -21,32 +30,41 @@ const NAME_KEY = 'match-player-name'
 export const LEADERBOARD_SIZE = 10
 export const MAX_NAME_LENGTH = 16
 
-function loadAll(): Leaderboards {
-  if (typeof window === 'undefined') return {}
-  try {
-    const raw = window.localStorage.getItem(STORAGE_KEY)
-    return raw ? (JSON.parse(raw) as Leaderboards) : {}
-  } catch {
-    return {}
-  }
-}
+// Stable fallbacks: returned as-is from snapshots, so they mustn't change.
+const NO_BOARDS: Leaderboards = {}
+const NO_ENTRIES: LeaderboardEntry[] = []
 
-function saveAll(boards: Leaderboards) {
-  try {
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(boards))
-  } catch {
-    // Storage full or disabled — nothing more we can do.
-  }
-}
+const loadAll = () => readJSON(STORAGE_KEY, NO_BOARDS)
 
 // More matches wins; ties go to fewer moves (better accuracy), then to
 // whoever set the score first.
 function compareEntries(a: LeaderboardEntry, b: LeaderboardEntry) {
-  return b.matches - a.matches || a.moves - b.moves || a.date.localeCompare(b.date)
+  return (
+    b.matches - a.matches || a.moves - b.moves || a.date.localeCompare(b.date)
+  )
 }
 
+const inGame = (key: string, gameId: string) => key.startsWith(`${gameId}:`)
+
 export function getLeaderboard(board: string): LeaderboardEntry[] {
-  return loadAll()[board] ?? []
+  return loadAll()[board] ?? NO_ENTRIES
+}
+
+/** A board's entries, re-rendering when any leaderboard changes. */
+export function useLeaderboard(board: string): LeaderboardEntry[] {
+  return useStoredJSON(STORAGE_KEY, NO_BOARDS)[board] ?? NO_ENTRIES
+}
+
+/** Whether a game has any saved scores, re-rendering on changes. */
+export function useHasLeaderboardEntries(gameId: string): boolean {
+  const all = useStoredJSON(STORAGE_KEY, NO_BOARDS)
+  return useMemo(
+    () =>
+      Object.entries(all).some(
+        ([key, list]) => inGame(key, gameId) && list.length > 0,
+      ),
+    [all, gameId],
+  )
 }
 
 /** 0-based rank a new score would take, or null if it doesn't qualify. */
@@ -74,40 +92,30 @@ export function addLeaderboardEntry(
     id: `${Date.now()}-${Math.random().toString(36).slice(2)}`,
     date: new Date().toISOString(),
   }
-  const boards = loadAll()
-  boards[board] = [...(boards[board] ?? []), full]
-    .sort(compareEntries)
-    .slice(0, LEADERBOARD_SIZE)
-  saveAll(boards)
+  const all = loadAll()
+  writeJSON(STORAGE_KEY, {
+    ...all,
+    [board]: [...(all[board] ?? []), full]
+      .sort(compareEntries)
+      .slice(0, LEADERBOARD_SIZE),
+  })
   return full
-}
-
-const inGame = (key: string, gameId: string) => key.startsWith(`${gameId}:`)
-
-export function hasAnyLeaderboardEntries(gameId: string): boolean {
-  return Object.entries(loadAll()).some(
-    ([key, list]) => inGame(key, gameId) && list.length > 0,
-  )
 }
 
 /** Deletes every leaderboard belonging to one game. */
 export function resetLeaderboards(gameId: string) {
-  const boards = loadAll()
-  for (const key of Object.keys(boards)) {
-    if (inGame(key, gameId)) delete boards[key]
-  }
-  saveAll(boards)
+  writeJSON(
+    STORAGE_KEY,
+    Object.fromEntries(
+      Object.entries(loadAll()).filter(([key]) => !inGame(key, gameId)),
+    ),
+  )
 }
 
 export function getLastPlayerName(): string {
-  if (typeof window === 'undefined') return ''
-  return window.localStorage.getItem(NAME_KEY) ?? ''
+  return readString(NAME_KEY) ?? ''
 }
 
 export function setLastPlayerName(name: string) {
-  try {
-    window.localStorage.setItem(NAME_KEY, name)
-  } catch {
-    // ignore
-  }
+  writeString(NAME_KEY, name)
 }

@@ -1,5 +1,42 @@
 
 @import "tailwindcss";
+/* Andika: designed by SIL for children learning to read (single-story a and
+   g, open 4, a 1 that can't be read as l). Latin only, regular and bold. */
+@import "@fontsource/andika/latin-400.css";
+@import "@fontsource/andika/latin-700.css";
+
+/* Pattern blocks on a cutting mat. Colors are the standard pattern-block
+   colors, used with fixed meanings:
+     hex (yellow)      the main action button; Player 1
+     rhombus (blue)    whatever is selected; Player 2
+     triangle (green)  a match
+     trapezoid (red)   a miss, time running out, destructive actions
+     square (orange)   Beat the clock */
+@theme {
+  --font-sans: "Andika", ui-sans-serif, system-ui, sans-serif;
+
+  --color-mat: #2e6b4f;
+  --color-mat-deep: #23553e;
+  --color-mat-text: #cfe3d8;
+  --color-paper: #fbfbf7;
+  --color-track: #e7ebee;
+  --color-ink: #1d2b3a;
+  --color-ink-soft: #4a5868;
+
+  --color-hex: #f6c81b;
+  --color-hex-deep: #c99f00;
+  --color-hex-pale: #fcf1c4;
+  --color-rhombus: #2f5fb3;
+  --color-rhombus-pale: #dde7f8;
+  --color-triangle: #4fb35c;
+  --color-triangle-pale: #dff2e1;
+  --color-trapezoid: #d8322f;
+  --color-trapezoid-pale: #f9dedc;
+  --color-square: #f28c28;
+  --color-square-pale: #fde8d2;
+  --color-tan: #d9be8a;
+  --color-tan-pale: #f1e8d6;
+}
 
 * {
   box-sizing: border-box;
@@ -14,7 +51,6 @@ body,
 body {
   margin: 0;
 }
-
 
 /* Card flip */
 .card-scene {
@@ -47,7 +83,55 @@ html {
 }
 body {
   overscroll-behavior: none;
-  background: #1e1b4b;
+  background: var(--color-mat);
+}
+
+/* A self-healing cutting mat: a fine grid with a heavier line every 5. */
+.mat {
+  background-color: var(--color-mat);
+  background-image:
+    linear-gradient(rgb(255 255 255 / 0.11) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(255 255 255 / 0.11) 1px, transparent 1px),
+    linear-gradient(rgb(255 255 255 / 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(255 255 255 / 0.05) 1px, transparent 1px);
+  background-size:
+    120px 120px,
+    120px 120px,
+    24px 24px,
+    24px 24px;
+  background-position: -1px -1px;
+}
+
+/* Card backs. Math Match: a yellow hexagon on orange, drawn like the stamps.
+   Monster Match: two shades of blue. Neither uses green, so both stand
+   apart from the mat. */
+.back-hexagon {
+  background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="-0.15 -0.15 3.764 4.300"><polygon points="1.73,0.00 3.46,1.00 3.46,3.00 1.73,4.00 0.00,3.00 0.00,1.00" fill="%23F6C81B" stroke="%231D2B3A" stroke-opacity=".55" stroke-width=".12" stroke-linejoin="round"/></svg>') center / 50% auto
+    no-repeat var(--color-square);
+}
+.back-blue {
+  background: linear-gradient(135deg, #5b82cc, var(--color-rhombus) 55%, #1e3f7a);
+}
+
+/* Something you can pick up: a crisp edge underneath instead of a blur.
+   A Tailwind utility, so it combines with ring-* instead of replacing it. */
+@utility block-edge {
+  @apply shadow-[0_3px_0_rgb(20_45_33/0.45)];
+}
+
+/* A block shape stamped onto a matched card. Waits for the flip to land. */
+@keyframes stamp-in {
+  from {
+    transform: scale(1.9) rotate(-25deg);
+    opacity: 0;
+  }
+  to {
+    transform: none;
+    opacity: 1;
+  }
+}
+.stamp {
+  animation: stamp-in 0.3s cubic-bezier(0.3, 1.5, 0.5, 1) 0.15s both;
 }
 button {
   touch-action: manipulation;
@@ -70,5 +154,6 @@ button {
 }
 @media (prefers-reduced-motion: reduce) {
   .card-shake { animation: none; }
+  .stamp { animation: none; }
   .card-inner { transition: none; }
 }

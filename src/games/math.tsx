@@ -81,7 +81,10 @@ function randomFact(op: Op, difficulty: Difficulty): Fact | null {
 
 const OPS: Op[] = ['addition', 'subtraction', 'multiplication']
 
-function buildPairs(difficulty: Difficulty, variant: string): [MathCard, MathCard][] {
+function buildPairs(
+  difficulty: Difficulty,
+  variant: string,
+): [MathCard, MathCard][] {
   const count = DIFFICULTIES[difficulty].pairs
   const used = new Set<number>()
   const pairs: [MathCard, MathCard][] = []
@@ -115,10 +118,12 @@ function split(a: MathCard, b: MathCard) {
   return { nums, eqs }
 }
 
+// Numbers are plain paper; equations are tinted by operation so the two
+// kinds of card are easy to tell apart.
 const EQUATION_STYLES: Record<Op, string> = {
-  addition: 'from-emerald-400 to-green-600 text-white',
-  subtraction: 'from-orange-400 to-rose-500 text-white',
-  multiplication: 'from-sky-400 to-indigo-600 text-white',
+  addition: 'bg-rhombus-pale',
+  subtraction: 'bg-trapezoid-pale',
+  multiplication: 'bg-square-pale',
 }
 
 function hint(difficulty: Difficulty, variant: string): string {
@@ -147,21 +152,18 @@ export const mathGame: GameDefinition<MathCard> = {
   id: 'math',
   title: 'Math Match',
   variants: VARIANTS,
-  variantHeading: 'Operation',
+  variantHeading: 'What to practice',
   defaultVariant: 'addition',
   difficultyHint: hint,
   allowFaceUp: true,
   defaultFaceUp: true,
-  backClass: 'from-teal-500 to-cyan-700',
+  backClass: 'back-hexagon',
   buildPairs,
-  faceClass: (c) =>
-    c.kind === 'number'
-      ? 'from-white to-indigo-100 text-indigo-950'
-      : EQUATION_STYLES[c.op],
+  faceClass: (c) => (c.kind === 'number' ? 'bg-paper' : EQUATION_STYLES[c.op]),
   renderFace: (c) =>
     c.kind === 'number' ? (
       <span
-        className="font-black leading-none tabular-nums"
+        className="font-bold leading-none tabular-nums"
         style={{ fontSize: c.value >= 100 ? '32cqw' : '44cqw' }}
       >
         {c.value}
@@ -169,7 +171,7 @@ export const mathGame: GameDefinition<MathCard> = {
     ) : (
       // Column form, like a worksheet: a over "op b", with a rule beneath.
       <span
-        className="flex flex-col items-end border-b-[1.5cqw] border-current pb-[2cqw] font-black leading-[1.05] tabular-nums drop-shadow"
+        className="flex flex-col items-end border-b-[1.5cqw] border-current pb-[2cqw] font-bold leading-[1.05] tabular-nums"
         style={{ fontSize: Math.max(c.a, c.b) >= 100 ? '24cqw' : '28cqw' }}
       >
         <span>{c.a}</span>

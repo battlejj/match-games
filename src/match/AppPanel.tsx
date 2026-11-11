@@ -7,6 +7,8 @@ import {
   offlineSupported,
   type VersionInfo,
 } from '../pwa'
+import { Block } from './blocks'
+import { primaryButton } from './controls'
 
 type CheckState =
   | { kind: 'idle' }
@@ -23,7 +25,7 @@ function formatBuilt(iso: string) {
   })
 }
 
-/** Settings → App: offline status, updates, and open-source licenses. */
+/** About this app: offline status, updates, and open-source licenses. */
 export function AppPanel() {
   return (
     <div className="space-y-4">
@@ -78,7 +80,7 @@ function OfflineSection() {
 
   if (!offlineSupported) {
     return (
-      <p className="rounded-xl bg-white/5 p-4 text-sm text-indigo-200">
+      <p className="rounded-xl bg-track p-4 text-ink-soft">
         Offline mode and updates are only active in the production build (
         <code>npm run build</code>). This is the development server.
       </p>
@@ -89,21 +91,24 @@ function OfflineSection() {
 
   return (
     <>
-      <div className="rounded-xl bg-white/5 p-4">
+      <div className="rounded-xl bg-track p-4">
         {installed === undefined ? (
-          <p className="text-sm text-indigo-200">Checking offline status…</p>
+          <p className="text-ink-soft">Checking offline status…</p>
         ) : installed ? (
           <>
-            <p className="font-semibold text-lime-300">✓ Ready to play offline</p>
-            <p className="mt-1 text-sm text-indigo-200">
-              Version <code className="text-white">{installed.version}</code>
-              {installed.built && <> · built {formatBuilt(installed.built)}</>}
+            <p className="flex items-center gap-2 font-bold">
+              <Block shape="triangle" className="w-4" />
+              Ready to play offline
+            </p>
+            <p className="mt-1 text-ink-soft">
+              Version <code className="text-ink">{installed.version}</code>
+              {installed.built && <>, built {formatBuilt(installed.built)}</>}
             </p>
           </>
         ) : (
           <>
-            <p className="font-semibold text-amber-300">Saving for offline use…</p>
-            <p className="mt-1 text-sm text-indigo-200">
+            <p className="font-bold">Saving for offline use…</p>
+            <p className="mt-1 text-ink-soft">
               Keep the app open while you're online. This only happens once.
             </p>
           </>
@@ -111,8 +116,8 @@ function OfflineSection() {
       </div>
 
       {showInstallTip && (
-        <div className="rounded-xl bg-white/5 p-4 text-sm text-indigo-100">
-          <p className="font-semibold text-white">Install on this iPhone or iPad</p>
+        <div className="rounded-xl bg-track p-4">
+          <p className="font-bold">Install on this iPhone or iPad</p>
           <ol className="mt-1 list-decimal space-y-0.5 pl-5">
             <li>
               Tap the <strong>Share</strong> button in Safari.
@@ -129,30 +134,32 @@ function OfflineSection() {
         <button
           type="button"
           onClick={runCheck}
-          disabled={!installed || check.kind === 'checking' || check.kind === 'updated'}
-          className="min-h-12 w-full rounded-xl bg-yellow-400 font-bold text-indigo-950 transition active:bg-yellow-500 disabled:opacity-40"
+          disabled={
+            !installed || check.kind === 'checking' || check.kind === 'updated'
+          }
+          className={`${primaryButton} w-full`}
         >
           {check.kind === 'checking' ? 'Checking…' : 'Check for updates'}
         </button>
-        <p className="mt-2 min-h-5 text-center text-sm" role="status">
+        <output className="mt-2 block min-h-6 text-center">
           {check.kind === 'current' && (
-            <span className="text-indigo-200">You have the latest version.</span>
+            <span className="text-ink-soft">You have the latest version.</span>
           )}
           {check.kind === 'updated' && (
-            <span className="text-lime-300">
+            <span className="font-bold">
               Updated to {check.version}. Restarting…
             </span>
           )}
           {check.kind === 'error' && (
-            <span className="text-rose-300">
+            <span className="font-bold text-trapezoid">
               {check.message.replace(/[.!]?$/, '.')} Your current version still
               works.
             </span>
           )}
-        </p>
+        </output>
       </div>
 
-      <p className="text-xs text-indigo-300">
+      <p className="text-sm text-ink-soft">
         The app never checks for updates on its own. It only changes when you
         tap the button above. Your scores are kept when it updates.
       </p>
@@ -182,31 +189,31 @@ function LicensesSection() {
   }, [open, text])
 
   return (
-    <div className="border-t border-white/10 pt-4">
+    <div className="border-t-2 border-track pt-4">
       <button
         type="button"
         aria-expanded={open}
         onClick={() => setOpen((o) => !o)}
-        className="flex min-h-11 w-full items-center justify-between rounded-xl px-1 text-sm font-semibold text-indigo-100 active:bg-white/10"
+        className="flex min-h-11 w-full items-center justify-between rounded-xl px-1 font-bold active:bg-track"
       >
         Licenses
         <span aria-hidden="true">{open ? '▾' : '▸'}</span>
       </button>
       {open && (
         <div className="mt-2">
-          <p className="mb-2 text-xs text-indigo-300">
+          <p className="mb-2 text-sm text-ink-soft">
             Match Games is open source under the MIT License, and it's built
             with the open-source projects listed below.
           </p>
           {error ? (
-            <p className="rounded-xl bg-white/5 p-3 text-sm text-indigo-200">
+            <p className="rounded-xl bg-track p-3 text-ink-soft">
               The licenses are collected by the production build (
               <code>npm run build</code>).
             </p>
           ) : text === null ? (
-            <p className="text-sm text-indigo-200">Loading…</p>
+            <p className="text-ink-soft">Loading…</p>
           ) : (
-            <pre className="max-h-80 select-text overflow-auto whitespace-pre-wrap rounded-xl bg-black/30 p-3 font-mono text-[11px] leading-snug text-indigo-100">
+            <pre className="max-h-80 select-text overflow-auto whitespace-pre-wrap rounded-xl bg-track p-3 font-mono text-[11px] leading-snug text-ink">
               {text}
             </pre>
           )}

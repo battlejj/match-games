@@ -76,7 +76,9 @@ export async function checkForUpdate(): Promise<{
   current: VersionInfo | null
 }> {
   if (!navigator.onLine) {
-    throw new Error("You're offline. Connect to the internet to check for updates.")
+    throw new Error(
+      "You're offline. Connect to the internet to check for updates.",
+    )
   }
   const { updated, current } = await ask('check-update')
   return { updated, current }

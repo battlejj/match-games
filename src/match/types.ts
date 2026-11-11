@@ -31,8 +31,9 @@ export interface GameDefinition<C extends CardData> {
   defaultFaceUp: boolean
   buildPairs: (difficulty: Difficulty, variant: string) => [C, C][]
   renderFace: (card: C) => ReactNode
-  /** Classes for the card front (background gradient etc.). */
+  /** Classes for the card front, e.g. its background color. */
   faceClass: (card: C) => string
+  /** Class for the card back: defined in styles.css, e.g. back-hexagon. */
   backClass: string
   /** Feedback line after a match / miss. Return null for none. */
   describeMatch?: (a: C, b: C) => string | null

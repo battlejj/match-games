@@ -1,194 +1,106 @@
-Welcome to your new TanStack Start app!
+# Match Games
 
-# Getting Started
+Matching games for kids, built as an installable, offline-capable web app
+(PWA):
 
-To run this application:
+- **Math Match**: pair each number with an equation that equals it. Addition,
+  subtraction, multiplication, or a mix, with face-up or face-down (memory)
+  cards.
+- **Monster Match**: a memory game with original creatures.
+
+Both games support solo, two-player, and 2-minute timed play, with local
+leaderboards for timed games. Everything is generated in the app. It makes no
+network requests after it's installed.
+
+## Development
 
 ```bash
 npm install
-npm run dev
+npm run dev      # http://localhost:3000
+npm run check    # Biome lint + format check
+npm run typecheck
+npm run build    # production build in dist/
+npm run preview  # serve the production build locally
 ```
 
-# Building For Production
-
-To build this application for production:
+### Tests
 
 ```bash
-npm run build
+npm test                          # unit tests (Vitest)
+npx playwright install chromium   # once, for the end-to-end tests
+npm run test:e2e                  # end-to-end tests (Playwright)
 ```
 
-## Styling
+- Unit tests sit next to the code they test (`*.test.ts`). They cover the
+  game rules (`src/match/engine.ts`), the math generator, leaderboards, best
+  scores, and storage.
+- End-to-end tests in `e2e/` build the app under `/match-games/` and serve it
+  the way GitHub Pages does. `e2e/server.mjs` can also simulate the site being
+  down or a new release being published. They play real games on a phone-sized
+  screen with a fake clock, and test offline use and manual updates.
+- CI (`.github/workflows/deploy.yml`) runs all checks and tests on every push to `main`
+  and every pull request. It only deploys from `main`, and only if they pass.
 
-This project uses [Tailwind CSS](https://tailwindcss.com/) for styling.
+Offline support only runs in production builds (`npm run build` +
+`npm run preview`), not under `npm run dev`.
 
-### Removing Tailwind CSS
+## Project layout
 
-If you prefer not to use Tailwind CSS:
+| Path | What it is |
+|---|---|
+| `src/match/engine.ts` | Game rules as a pure reducer: taps, misses, turns, timing |
+| `src/match/MatchGame.tsx` | Game screen: connects the reducer to timers and the UI |
+| `src/match/display.ts` | The names shown for each choice ("Beat the clock", "Face down", ...) |
+| `src/match/` (other files) | Cards, the New game sheet, results, leaderboards, storage |
+| `src/games/math.tsx` | Math Match: generates number/equation pairs |
+| `src/games/monsters.tsx` | Monster Match: creature list and card art |
+| `src/routes/` | Pages: `/` (game picker), `/math`, `/monsters` |
+| `src/styles.css` | Colors and what each one means, the font, card backs |
+| `src/pwa.ts` | Service worker registration and the update check |
+| `public/sw.js` | Service worker. **Never edit it; see below.** |
+| `vite-plugins/` | Build step that writes `LICENSES.txt` |
+| `vite.config.ts` | Also writes `version.json` for offline updates |
 
-1. Remove the demo pages in `src/routes/demo/`
-2. Replace the Tailwind import in `src/styles.css` with your own styles
-3. Remove `tailwindcss()` from the plugins array in `vite.config.ts`
-4. Remove `@tailwindcss/vite` and `tailwindcss` from `package.json`
+To add a game, write a `GameDefinition` (see `src/match/types.ts`) and give it
+a route that renders `<MatchGame game={...} />`.
 
-## Linting & Formatting
+## Offline support and updates
 
-This project uses [Biome](https://biomejs.dev/) for linting and formatting. The following scripts are available:
+Installed copies of the app **never update on their own**. They only update
+when the user taps **About this app → Check for updates** on the home screen.
 
+- Each build writes `dist/version.json`: a content-based version id and the
+  list of every file the app needs.
+- On first launch, `public/sw.js` saves those files and serves the app from
+  that copy from then on.
+- Checking for updates downloads the newest `version.json`. If the version
+  differs, the service worker downloads the whole new version, switches to it,
+  and deletes the old one. If anything fails, the current version keeps
+  working.
 
-```bash
-npm run lint
-npm run format
-npm run check
-```
+**Do not edit `public/sw.js`.** Browsers re-download that file in the
+background and install it automatically if a single byte changes, which would
+bypass the user's choice. The build fails if its hash changes (see
+`SW_SHA256` in `vite.config.ts`). If it truly must change, update that hash
+and accept that installed apps will pick up the new worker automatically.
 
+## Deploying to GitHub Pages
 
+`.github/workflows/deploy.yml` builds and publishes on every push to `main`.
+One-time setup: in the repository, go to **Settings → Pages → Source** and
+choose **GitHub Actions**.
 
-## Routing
+Publishing makes a new version available. Installed apps get it when the user
+checks for updates.
 
-This project uses [TanStack Router](https://tanstack.com/router) with file-based routing. Routes are managed as files in `src/routes`.
+To install on iPhone or iPad, open the site in Safari, tap **Share → Add to
+Home Screen**, then open the app from the Home Screen once while online so it
+can save itself for offline use.
 
-### Adding A Route
+## Licenses
 
-To add a new route to your application just add a new file in the `./src/routes` directory.
-
-TanStack will automatically generate the content of the route file for you.
-
-Now that you have two routes you can use a `Link` component to navigate between them.
-
-### Adding Links
-
-To use SPA (Single Page Application) navigation you will need to import the `Link` component from `@tanstack/react-router`.
-
-```tsx
-import { Link } from "@tanstack/react-router";
-```
-
-Then anywhere in your JSX you can use it like so:
-
-```tsx
-<Link to="/about">About</Link>
-```
-
-This will create a link that will navigate to the `/about` route.
-
-More information on the `Link` component can be found in the [Link documentation](https://tanstack.com/router/v1/docs/framework/react/api/router/linkComponent).
-
-### Using A Layout
-
-In the File Based Routing setup the layout is located in `src/routes/__root.tsx`. Anything you add to the root route will appear in all the routes. The route content will appear in the JSX where you render `{children}` in the `shellComponent`.
-
-Here is an example layout that includes a header:
-
-```tsx
-import { HeadContent, Scripts, createRootRoute } from '@tanstack/react-router'
-
-export const Route = createRootRoute({
-  head: () => ({
-    meta: [
-      { charSet: 'utf-8' },
-      { name: 'viewport', content: 'width=device-width, initial-scale=1' },
-      { title: 'My App' },
-    ],
-  }),
-  shellComponent: ({ children }) => (
-    <html lang="en">
-      <head>
-        <HeadContent />
-      </head>
-      <body>
-        <header>
-          <nav>
-            <Link to="/">Home</Link>
-            <Link to="/about">About</Link>
-          </nav>
-        </header>
-        {children}
-        <Scripts />
-      </body>
-    </html>
-  ),
-})
-```
-
-More information on layouts can be found in the [Layouts documentation](https://tanstack.com/router/latest/docs/framework/react/guide/routing-concepts#layouts).
-
-## Server Functions
-
-TanStack Start provides server functions that allow you to write server-side code that seamlessly integrates with your client components.
-
-```tsx
-import { createServerFn } from '@tanstack/react-start'
-
-const getServerTime = createServerFn({
-  method: 'GET',
-}).handler(async () => {
-  return new Date().toISOString()
-})
-
-// Use in a component
-function MyComponent() {
-  const [time, setTime] = useState('')
-  
-  useEffect(() => {
-    getServerTime().then(setTime)
-  }, [])
-  
-  return <div>Server time: {time}</div>
-}
-```
-
-## API Routes
-
-You can create API routes by using the `server` property in your route definitions:
-
-```tsx
-import { createFileRoute } from '@tanstack/react-router'
-import { json } from '@tanstack/react-start'
-
-export const Route = createFileRoute('/api/hello')({
-  server: {
-    handlers: {
-      GET: () => json({ message: 'Hello, World!' }),
-    },
-  },
-})
-```
-
-## Data Fetching
-
-There are multiple ways to fetch data in your application. You can use TanStack Query to fetch data from a server. But you can also use the `loader` functionality built into TanStack Router to load the data for a route before it's rendered.
-
-For example:
-
-```tsx
-import { createFileRoute } from '@tanstack/react-router'
-
-export const Route = createFileRoute('/people')({
-  loader: async () => {
-    const response = await fetch('https://swapi.dev/api/people')
-    return response.json()
-  },
-  component: PeopleComponent,
-})
-
-function PeopleComponent() {
-  const data = Route.useLoaderData()
-  return (
-    <ul>
-      {data.results.map((person) => (
-        <li key={person.name}>{person.name}</li>
-      ))}
-    </ul>
-  )
-}
-```
-
-Loaders simplify your data fetching logic dramatically. Check out more information in the [Loader documentation](https://tanstack.com/router/latest/docs/framework/react/guide/data-loading#loader-parameters).
-
-
-
-# Learn More
-
-You can learn more about all of the offerings from TanStack in the [TanStack documentation](https://tanstack.com).
-
-For TanStack Start specific documentation, visit [TanStack Start](https://tanstack.com/start).
+The app is MIT licensed (see `LICENSE`). Each build writes `LICENSES.txt`
+with the app's license and the full license text of every bundled
+third-party package; the app shows it under **About this app → Licenses** on the home screen.
+The build fails if a bundled package has a license outside the permissive
+allowlist in `vite-plugins/third-party-notices.ts`.

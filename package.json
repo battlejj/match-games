@@ -3,9 +3,6 @@
   "private": true,
   "license": "MIT",
   "type": "module",
-  "imports": {
-    "#/*": "./src/*"
-  },
   "scripts": {
     "dev": "vite dev --port 3000",
     "generate-routes": "tsr generate",
@@ -13,9 +10,13 @@
     "preview": "vite preview",
     "format": "biome format",
     "lint": "biome lint",
-    "check": "biome check"
+    "check": "biome check",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:e2e": "playwright test"
   },
   "dependencies": {
+    "@fontsource/andika": "^5.3.0",
     "@tailwindcss/vite": "^4.1.18",
     "@tanstack/react-devtools": "0.10.14",
     "@tanstack/react-router": "1.170.46",
@@ -26,6 +27,7 @@
   },
   "devDependencies": {
     "@biomejs/biome": "2.4.5",
+    "@playwright/test": "^1.65.0",
     "@tanstack/devtools-vite": "0.8.6",
     "@tanstack/router-cli": "^1.132.0",
     "@tanstack/router-plugin": "1.168.48",
@@ -33,13 +35,9 @@
     "@types/react": "^19.2.0",
     "@types/react-dom": "^19.2.0",
     "@vitejs/plugin-react": "^6.0.1",
+    "happy-dom": "^21.0.4",
     "typescript": "^6.0.2",
-    "vite": "^8.0.0"
-  },
-  "pnpm": {
-    "onlyBuiltDependencies": [
-      "esbuild",
-      "lightningcss"
-    ]
+    "vite": "^8.0.0",
+    "vitest": "^5.1.0"
   }
 }
