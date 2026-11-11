@@ -149,7 +149,7 @@ export function MatchGame<C extends CardData>({
   const remaining = Math.max(0, TIMED_SECONDS - seconds)
 
   return (
-    <div className="mat flex h-dvh select-none flex-col overflow-hidden pt-[calc(env(safe-area-inset-top)+0.75rem)] pr-[max(env(safe-area-inset-right),0.75rem)] pb-[max(env(safe-area-inset-bottom),0.75rem)] pl-[max(env(safe-area-inset-left),0.75rem)] text-paper">
+    <div className="mat flex h-dvh select-none flex-col overflow-hidden p-[calc(env(safe-area-inset-top)+1.5rem)_max(env(safe-area-inset-right),1.25rem)_max(env(safe-area-inset-bottom),1.5rem)_max(env(safe-area-inset-left),1.25rem)] text-paper">
       <div className="mx-auto flex min-h-0 w-full max-w-5xl flex-1 flex-col">
         <header className="flex items-center justify-between gap-1.5">
           <div className="flex min-w-0 items-center gap-1.5">
