@@ -27,7 +27,7 @@ function Home() {
   const [sheet, setSheet] = useState<'scores' | 'about' | null>(null)
   const close = () => setSheet(null)
   return (
-    <div className="mat flex min-h-dvh flex-col items-center justify-center p-[max(env(safe-area-inset-top),1.5rem)_max(env(safe-area-inset-right),1.25rem)_max(env(safe-area-inset-bottom),1.5rem)_max(env(safe-area-inset-left),1.25rem)] text-paper">
+    <div className="mat flex min-h-dvh flex-col items-center justify-center p-[calc(env(safe-area-inset-top)+1.5rem)_max(env(safe-area-inset-right),1.25rem)_max(env(safe-area-inset-bottom),1.5rem)_max(env(safe-area-inset-left),1.25rem)] text-paper">
       <div className="w-full max-w-xl">
         <h1 className="text-4xl font-bold sm:text-5xl">Match Games</h1>
         <div className="mt-6 grid gap-4">
